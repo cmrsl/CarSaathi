@@ -16,8 +16,6 @@ import com.bazar.car.util.OtpUtil;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StopWatch;
@@ -38,7 +36,6 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final OtpTokenRepository otpTokenRepository;
     private final PasswordEncoder passwordEncoder;
-    private final JavaMailSender javaMailSender;
     private final JwtService jwtService;
     private final UsersvcProperties usersvcProperties;
     private final SmsSender smsSender;
@@ -47,14 +44,12 @@ public class UserServiceImpl implements UserService {
     public UserServiceImpl(UserRepository userRepository,
                            OtpTokenRepository otpTokenRepository,
                            PasswordEncoder passwordEncoder,
-                           JavaMailSender javaMailSender,
                            JwtService jwtService,
                            UsersvcProperties usersvcProperties,
                            SmsSender smsSender,EmailService emailService) {
         this.userRepository = userRepository;
         this.otpTokenRepository = otpTokenRepository;
         this.passwordEncoder = passwordEncoder;
-        this.javaMailSender = javaMailSender;
         this.jwtService = jwtService;
         this.usersvcProperties = usersvcProperties;
         this.smsSender = smsSender;
@@ -133,17 +128,6 @@ public class UserServiceImpl implements UserService {
 
         // Send verification email (implementation omitted for brevity)
         emailService.sendOtpMail(otpCode,user,otpExpiryMinutes());
-//        try {
-//            SimpleMailMessage msg = new SimpleMailMessage();
-//            msg.setTo(user.getEmail());
-//            msg.setSubject(EmailTemplate.signUpOtpSubject());
-//            msg.setText(EmailTemplate.signUpOtpBody(user.getUsername(), otpCode, otpExpiryMinutes()));
-//            javaMailSender.send(msg);
-//            log.info("Sign-up OTP email sent to {}", user.getEmail());
-//        }catch (Exception e){
-//            log.error("Failed to send sign-up OTP email to {}: {}", user.getEmail(), e.getMessage());
-//            throw new ApiValidationException(HttpStatus.INTERNAL_SERVER_ERROR, "EMAIL_SEND_FAILURE", "Failed to send verification email");
-//        }
 
         stopWatch.stop();
         log.info("Total sign-up process with OTP completed in {} ms", stopWatch.getTotalTimeMillis());
@@ -246,7 +230,7 @@ public class UserServiceImpl implements UserService {
             }
 
             // Resend the existing OTP
-            sendVarificationEmail(user, otpToken.getCode());
+            sendVerificationEmail(user, otpToken.getCode());
             otpToken.setLastSentAt(Instant.now());
             otpToken.incrementSentCount();
             otpTokenRepository.save(otpToken);
@@ -271,7 +255,7 @@ public class UserServiceImpl implements UserService {
         stopWatch.stop();
         stopWatch.start("sendVarificationEmail");
         // Send the OTP via email
-        sendVarificationEmail(user, otpCode);
+        sendVerificationEmail(user, otpCode);
         stopWatch.stop();
         log.info("Generated and sent new OTP in {} ms", stopWatch.getTotalTimeMillis());
         return new ResendEmailOtpResponse("REGENERATED_AND_SENT", 0, (int)
@@ -280,17 +264,22 @@ public class UserServiceImpl implements UserService {
 
     }
 
-    private void sendVarificationEmail(User user, String otpCode) {
+    private void sendVerificationEmail(User user, String otpCode) {
         try {
-            SimpleMailMessage msg = new SimpleMailMessage();
-            msg.setTo(user.getEmail());
-            msg.setSubject(EmailTemplate.signUpOtpSubject());
-            msg.setText(EmailTemplate.signUpOtpBody(user.getUsername(), otpCode, otpExpiryMinutes()));
-            javaMailSender.send(msg);
+            emailService.sendOtpMail(
+                    otpCode,
+                    user,
+                    otpExpiryMinutes()
+            );
             log.info("Sign-up OTP email sent to {}", user.getEmail());
+
         } catch (Exception e) {
             log.error("Failed to send sign-up OTP email to {}: {}", user.getEmail(), e.getMessage());
-            throw new ApiValidationException(HttpStatus.INTERNAL_SERVER_ERROR, "EMAIL_SEND_FAILURE", "Failed to send verification email");
+            throw new ApiValidationException(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    "EMAIL_SEND_FAILURE",
+                    "Failed to send verification email"
+            );
         }
     }
 

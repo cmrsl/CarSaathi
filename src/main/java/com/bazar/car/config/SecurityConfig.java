@@ -71,6 +71,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/vehicles/v1").permitAll()
                         .requestMatchers(HttpMethod.PUT, "/api/vehicles/v1/*").permitAll()
                         .requestMatchers(HttpMethod.DELETE, "/api/vehicles/v1/*").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/test/email").permitAll()
                         .requestMatchers("/actuator/**").permitAll()
                         // Health/actuator (Optional): uncomment if you want to expose health endpoints
                         //.requestMatchers("/actuator/health", "/actuator/info").permitAll()
