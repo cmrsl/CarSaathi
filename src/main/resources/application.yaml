@@ -10,6 +10,8 @@ server:
 spring:
   application:
     name: Car-Bazar  # Application name
+    shutdown: graceful
+    forward-headers-strategy: framework
 
   # Database Configuration
   datasource:
@@ -17,23 +19,37 @@ spring:
     username: postgres  # Database username
     password: vijayk    # Database password
     driver-class-name: org.postgresql.Driver  # JDBC driver
+    hikari:
+      pool-name: HikariPool
+      maximum-pool-size: 5
+      minimum-idle: 1
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      connection-timeout: 30000
+      initialization-fail-timeout: 60000
+
   jpa:
+    open-in-view: false
+    show-sql: false
     hibernate:
-      ddl-auto: update  # Auto schema update
-    show-sql: true      # Show SQL queries in logs
+      ddl-auto: update   # ✅ production-safe
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect  # Hibernate dialect
-        format_sql: true  # Format SQL output
+        dialect: org.hibernate.dialect.PostgreSQLDialect
         jdbc:
-          time_zone: UTC  # Set JDBC timezone
+          time_zone: UTC
+        format_sql: false
+        generate_statistics: false
   # Multipart File Upload Configuration
   servlet:
     multipart:
       enabled: true  # Enable multipart uploads
+      max-file-size: 10MB
+      max-request-size: 10MB
 
   # Common Recommended Properties
   main:
+    lazy-initialization: true
     allow-bean-definition-overriding: true  # Allow bean overriding (useful for dev)
   jackson:
     serialization:
