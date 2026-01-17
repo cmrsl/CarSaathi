@@ -24,6 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 
 @Service
@@ -250,7 +251,7 @@ public class VehicleServiceImpl implements VehicleService {
                 v.getMileage(),
                 v.getPrice(),
                 v.getDescription(),
-                v.getStatus().name(),
+                Optional.ofNullable(v.getStatus()).map(Enum::name).orElse("PENDING"),
                 v.getImages(),
                 v.getCreatedDate(),
                 v.getLastModifiedDate()

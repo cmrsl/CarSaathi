@@ -69,7 +69,7 @@ public class Vehicle extends Auditable{
     private BigDecimal price;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
+    @Column(length = 20)
     private VehicleStatus status; // active, sold, pending
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)

@@ -69,7 +69,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/v1/vehicles").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/vehicles*").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/vehicles").permitAll()
-                        .requestMatchers(HttpMethod.PUT, "/api/v1/vehicles*").permitAll()
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/vehicles").permitAll()
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/vehicles/*").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/test/email").permitAll()
                         .requestMatchers("/actuator/**").permitAll()
